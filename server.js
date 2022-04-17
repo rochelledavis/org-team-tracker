@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const consoleTable = require('console.table');
 const db = require('./config/connection');
 
-//Present options to view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
+//Present options to take an action
 
 const selectAction = () =>{
     return inquirer.prompt([
@@ -38,21 +38,30 @@ const selectAction = () =>{
     });
 };
 
-//Option: view all departments, then display table showing deparment names and department ids
+//Option: view all departments, then display table showing department names and department ids
 viewDepartments = () => {
-    console.log('Display departments table')
-    selectAction();
+    db.query("SELECT * FROM department", function(err, res) {
+        if (err) throw err;
+        console.table(res);
+        selectAction();
+    })
 }
 
 //Option: view all roles, then display job title, role id, role department, role salary
 viewRoles = () => {
-    console.log('Display roles table')
-    selectAction();
+    db.query("SELECT * FROM role", function(err, res) {
+        if (err) throw err;
+        console.table(res);
+        selectAction();
+    })
 }
 //Option: view all employees, then display a formatted table showing employee ids, first names, last names, job titles, departments, salaries, and managers that the employee reports to
 viewEmployees = () => {
-    console.log('Display employees table')
-    selectAction();
+    db.query("SELECT * FROM employee", function(err, res) {
+        if (err) throw err;
+        console.table(res);
+        selectAction();
+    })
 }
 //Option: add a department, display prompt to enter the name of the department and update the department in the database
 addDepartment = () => {
@@ -76,7 +85,7 @@ updateEmployee = () => {
 }
 //Option:quit
 quit = () => {
-    selectAction();
+    db.end();
 }
 
 selectAction();
