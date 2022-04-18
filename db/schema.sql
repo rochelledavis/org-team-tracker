@@ -10,7 +10,7 @@ CREATE TABLE department (
 CREATE TABLE role (
     id INTEGER PRIMARY KEY AUTO_INCREMENT, 
     job_title VARCHAR(30) NOT NULL,
-    role_salary INTEGER,
+    role_salary DECIMAL,
     dept_id INTEGER,
     CONSTRAINT fk_department FOREIGN KEY (dept_id) REFERENCES department(id)
 );

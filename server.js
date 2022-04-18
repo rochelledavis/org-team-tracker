@@ -81,40 +81,159 @@ addDepartment = () => {
         }
     ])
     .then(answer => {
-        const sql = "INSERT INTO department (dept_name) VALUES ?";
+        const sql = "INSERT INTO department (dept_name) VALUES (?)";
         db.query(sql, answer.department, (err, res) => {
             if (err) throw err;
             console.log('Department added');
             viewDepartments();
             selectAction();
         })
-    })
-    // .then((res) => {
-    //     db.query("INSERT INTO department (dept_name) SET ?", {
-    //         dept_name: res.department,
-    //     },
-    //     (err, res) => {
-    //         if (err) throw err;
-    //         console.log('Department added');
-    //         viewDepartments();
-    //         selectAction();
-    //     });
-    // });
+    });
 };
 //Option: add a role, display prompts to enter name, salary, department for the role and that role is added to the database
 addRole = () => {
-    console.log('Display new role questions')
-    selectAction();
-}
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'role',
+            message: 'Enter the name of the role you would like to add.',
+            validate: role => {
+                if (role) {
+                    return true;
+                } else {
+                    console.log(`Please enter a role name!`);
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'What is the salary for this role?',
+            validate: salary => {
+                if (salary) {
+                    return true;
+                } else {
+                    console.log(`Please enter a salary!`);
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(answer => {
+        const params = [answer.role, answer.salary];
+        const addRoleSQL = 'SELECT * FROM department';
+        db.query(addRoleSQL, (err, data) => {
+            if (err) throw err;
+
+            const department = data.map(({ dept_name, id }) => ({ dept_name: dept_name, value: id }));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'What department is this role is in?',
+                    choices: department
+                }
+            ])
+            .then(deptAnswer => {
+                const dept = deptAnswer.dept;
+                params.push(dept);
+
+                const sql = 'INSERT INTO role (job_title, role_salary, dept_id) VALUES (?, ?, ?)';
+
+                db.query(sql, params, (err, res) => {
+                    if (err) throw err;
+                    console.log('Role added!');
+                    selectAction();
+                })
+            });
+        });
+    });
+};
 //Option: add an employee, display prompts to enter first name, last name, role, manager, and that employee is added to the database
 addEmployee = () => {
-    console.log('Display new employee questions')
-    selectAction();
-}
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'first_name',
+            message: 'Enter the first name of the employee',
+            validate: first_name => {
+                if (first_name) {
+                    return true;
+                } else {
+                    console.log(`Please enter a first name!`);
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'last_name',
+            message: 'Enter the last name of the employee',
+            validate: last_name => {
+                if (last_name) {
+                    return true;
+                } else {
+                    console.log(`Please enter a last name!`);
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(answer => {
+        const params = [answer.first_name, answer.last_name];
+        const addRoleSQL = 'SELECT * FROM role';
+        db.query(addRoleSQL, (err, data) => {
+            if (err) throw err;
+
+            const role = data.map(({ id, job_title }) => ({ job_title: job_title, value: id }));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: 'What role of this employee?',
+                    choices: role
+                }
+            ])
+            .then(roleAnswer => {
+                const roles = roleAnswer.role;
+                params.push(roles);
+
+                const managerSQL = 'SELECT * FROM employee';
+
+                db.query(managerSQL, (err, data) => {
+                    if (err) throw err;
+                    const managersList = data.map(({ id, first_name, last_name}) => ({ first_name: first_name, last_name: last_name, value: id }));
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'manager',
+                            message: `Select the employee's manager`,
+                            choices: managersList
+                        }
+                    ])
+                    .then(managerAnswer => {
+                        const manager = managerAnswer.manager;
+                        params.push(manager);
+
+                        const sql = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)';
+
+                        db.query(sql, params, (err, res) => {
+                            if (err) throw err;
+                            console.log('Employee added!')
+                            selectAction();
+                        })
+                    });
+                });
+            });
+        });
+    });
+};
 //Option: update an employee role, display prompts to select an employee to update and their new role and it's updated in the database
 updateEmployee = () => {
-    console.log('Display update employee questions')
-    selectAction();
+    const getEmployees = 'SELECT'
 }
 //Option:quit
 quit = () => {
