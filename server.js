@@ -65,9 +65,42 @@ viewEmployees = () => {
 }
 //Option: add a department, display prompt to enter the name of the department and update the department in the database
 addDepartment = () => {
-    console.log('Display departments questions')
-    selectAction();
-}
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'department',
+            message: 'What is the name of the department that you would like to add?',
+            validate: department => {
+                if (department) {
+                    return true;
+                } else {
+                    console.log(`Please enter department name!`);
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(answer => {
+        const sql = "INSERT INTO department (dept_name) VALUES ?";
+        db.query(sql, answer.department, (err, res) => {
+            if (err) throw err;
+            console.log('Department added');
+            viewDepartments();
+            selectAction();
+        })
+    })
+    // .then((res) => {
+    //     db.query("INSERT INTO department (dept_name) SET ?", {
+    //         dept_name: res.department,
+    //     },
+    //     (err, res) => {
+    //         if (err) throw err;
+    //         console.log('Department added');
+    //         viewDepartments();
+    //         selectAction();
+    //     });
+    // });
+};
 //Option: add a role, display prompts to enter name, salary, department for the role and that role is added to the database
 addRole = () => {
     console.log('Display new role questions')
