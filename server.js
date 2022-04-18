@@ -233,7 +233,58 @@ addEmployee = () => {
 };
 //Option: update an employee role, display prompts to select an employee to update and their new role and it's updated in the database
 updateEmployee = () => {
-    const getEmployees = 'SELECT'
+    const getEmployees = 'SELECT * FROM employee';
+
+    db.query(getEmployees, (err, data) => {
+        if (err) throw err;
+        const employees = data.map(({ id, first_name, last_name }) => ({ first_name: first_name, last_name: last_name, value: id }));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'empName',
+                message: 'Select the employee that you would like to update.',
+                choices: employees
+            }
+        ])
+        .then(employeeAnswer => {
+            const employee = employeeAnswer.empName;
+            const params = [];
+            params.push(employee);
+
+            const getRoles = 'SELECT * FROM role';
+
+            db.query(getRoles, (err, data) => {
+                if (err) throw err;
+                const roles = data.map(({ id, job_title }) => ({ job_title: job_title, value: id }));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'newRole',
+                        message: 'What is the new role?',
+                        choices: roles
+                    }
+                ])
+                .then(roleAnswer => {
+                    const role = roleAnswer.role;
+                    params.push(role);
+
+                    var employee = params [0]
+                    params[0] = role
+                    params[1] = employee
+
+                    const sql = 'UPDATE employee SET role_id = ? WHERE id = ?';
+
+                    db.query(sql, params, (err, res) => {
+                        if (err) throw err;
+                        console.log('Employee updated!');
+                        selectAction();
+                    })
+                })
+            })
+        })
+    })
 }
 //Option:quit
 quit = () => {
